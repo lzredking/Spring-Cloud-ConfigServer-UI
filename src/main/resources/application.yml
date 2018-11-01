@@ -19,7 +19,7 @@ spring:
         git:  
           uri: https://github.com/lzredking/config-repo.git
           username: redkingyang@foxmail.com
-          password: yourgitpassword
+          password: redking3#
           basedir: /temp/config-repo 
           search-paths: config-server
         default-label: master

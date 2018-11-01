@@ -40,13 +40,97 @@ public class ResourceEndpoint {
 	@Resource
 	LocalResources localResources;
 	
-	/**添加和修改
+	/**添加和修改，不提交
+	 * @param fileName
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	@RequestMapping(method ={RequestMethod.POST},value = "/addkv/{fileName}/{key}/{value}")
+	public ResBean addResKey(@PathVariable String fileName,@PathVariable String key,@PathVariable String value) {
+		
+		if(StringUtils.isBlank(fileName) || StringUtils.isBlank(key)) {
+			return new ResBean(400,"文件名不能为空");
+		}
+		//检查锁
+		if(LockCache.isLock(fileName+"-"+key)) {
+			return new ResBean(401, "此文件资源已经占用，请稍候再试！");
+		}
+		LockCache.lock(fileName,"");
+		LockCache.lock(fileName+"-"+key,"");
+		String exception=null;
+		try {
+			String dir=baseUtile.validate();
+			Properties pro=new Properties();
+			File file=new File(dir+"/"+fileName);
+			InputStream in =new FileInputStream(file);
+			pro.load(in);
+			in.close();
+			//
+			FileOutputStream out = new FileOutputStream(file,false);//true表示追加打开
+			pro.put(key, value);
+			pro.store(out, "add key ： "+key);
+			out.close();
+
+			Map<String,String> cache=new HashMap<String,String>((Map)pro);
+			ResourceCache.updateResource(dir+"/"+fileName, cache);
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			exception=e.getMessage();
+		}finally {
+			LockCache.unLock(fileName+"-"+key);
+			if(StringUtils.isNotBlank(exception)) {
+				return new ResBean(401, "error msg: "+exception);
+			}
+		}
+		return new ResBean();
+	}
+	
+	/**提交文件,此时提交无法锁定，可能会覆盖别人提交的内容
+	 * @param fileName
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	@RequestMapping(method ={RequestMethod.POST},value = "/pashFile/{fileName}/")
+	public ResBean pashFile(@PathVariable String fileName) {
+		
+		if(StringUtils.isBlank(fileName)) {
+			return new ResBean(400,"文件名不能为空");
+		}
+		//检查锁
+//		if(LockCache.isLock(fileName)) {
+//			return new ResBean(401, "此文件资源已经占用，请稍候再试！");
+//		}
+//		LockCache.lock(fileName,"");
+		String exception=null;
+		try {
+			
+			
+			String res=JGitUtil.gitCommitAndPush(new File(baseUtile.getBaseDir()),configInfo.getGitUser(),configInfo.getGitPwd());
+			if(StringUtils.isBlank(res)) {
+				return new ResBean(401, "push 失败");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			exception=e.getMessage();
+		}finally {
+			LockCache.unLock(fileName);
+			if(StringUtils.isNotBlank(exception)) {
+				return new ResBean(401, "error msg: "+exception);
+			}
+		}
+		return new ResBean();
+	}
+	/**添加和修改，并提交文件
 	 * @param key
 	 * @param value
 	 * @return
 	 */
 	@RequestMapping(method ={RequestMethod.POST},value = "/add/{fileName}/{key}/{value}")
-	@ResponseBody
 	public ResBean addResKeyAndPush(@PathVariable String fileName,@PathVariable String key,@PathVariable String value) {
 		
 		if(StringUtils.isBlank(fileName) || StringUtils.isBlank(key)) {
@@ -56,7 +140,7 @@ public class ResourceEndpoint {
 		if(LockCache.isLock(fileName+"-"+key)) {
 			return new ResBean(401, "此文件资源已经占用，请稍候再试！");
 		}
-		LockCache.lock(fileName+"-"+key,value);
+		LockCache.lock(fileName+"-"+key,"");
 		String exception=null;
 		try {
 			String dir=baseUtile.validate();
@@ -255,6 +339,39 @@ public class ResourceEndpoint {
 		return new ResBean(200,"强制同步服务器配置文件成功！");
 	}
 	
+	/**新增配置文件
+	 * @param resName
+	 * @return
+	 */
+	@RequestMapping(method ={RequestMethod.POST},value = "/addResFile/{resName}")
+	public ResBean addResFile(@PathVariable String resName) {
+
+		String exception=null;
+		try {
+			String dir=baseUtile.validate();
+			
+			File file=new File(dir+"/"+resName+".properties");
+			System.out.println(file.getPath());
+			if(!file.isFile()) {
+				file.createNewFile();
+			}
+			//Git,此时不用提交。还是空文件，在添加属性的时候直接提交
+//			String res=JGitUtil.gitCommitAndPush(new File(baseUtile.getBaseDir()),configInfo.getGitUser(),configInfo.getGitPwd());
+//			if(StringUtils.isBlank(res)) {
+//				return new ResBean(401, "push 失败");
+//			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			exception=e.getMessage();
+		}finally {
+			if(StringUtils.isNotBlank(exception)) {
+				return new ResBean(401, "error msg: "+exception);
+			}
+		}
+		return new ResBean();
+	}
 	
 	private void delFile(File file) {
 		 

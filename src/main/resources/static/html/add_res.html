@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Login Spring Cloud ConfigServer UI</title>
+	<link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/icon.css">
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.easyui.min.js"></script>
+</head>
+<body>
+	<div class="easyui-panel" title="Config Server Console Info" style="width:80%;max-width:900px;padding:30px 60px;" align="left">
+            <div style="margin-bottom:20px">
+               	 新建微服务配置文件，文件名格式如下<BR>
+               	服务名-环境 如：ms-order-dev
+               	<BR>
+               	不用带文件后缀。
+            </div>
+             <form id="ff" method="post" action="/main" >
+            	<div style="margin-bottom:20px">
+                	<input id="resName" class="easyui-textbox" name="resName" style="width:100%" data-options="label:'配置文件名:',required:true">
+            	</div>
+            
+            
+        	</form>
+	        <div style="text-align:center;padding:5px 0">
+	            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="add()" style="width:80px">Submit</a>
+	            <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()" style="width:80px">Clear</a>
+	        </div>
+            
+    </div>
+    <script>
+	    function clearForm(){
+	        $('#ff').form('clear');
+	    }
+        function add(){
+        	var resName=$("#resName").val();
+        	alert(resName);
+			$.messager.confirm('提醒', '确认要新增配置文件吗?', function(r){
+				if (r){
+					
+					$.ajax({  
+		                type: "POST", 
+		                async: false,  
+		                url: "/addResFile/"+resName,
+		                success: function (data) {  
+		                	
+		                   	var json = eval(data);  
+		                	if(json.code==200){
+		                		$.messager.alert('UI','增加成功，请刷新左边菜单！','info');
+		                	}else{
+		                		$.messager.alert('UI','增加失败!请到服务器手动创建文件,'+json.msg,'error');
+		                	}
+		                	
+		                }  
+		            });  
+				}
+			});
+        	
+        }
+       
+    </script>
+</body>
+</html>

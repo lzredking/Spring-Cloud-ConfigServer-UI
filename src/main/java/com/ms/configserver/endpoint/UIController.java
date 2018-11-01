@@ -114,11 +114,11 @@ public class UIController {
 		return "/html/centent";
 	}
 	
-//	@RequestMapping("/test")
-//	public String test(Map <String, Object> map) {
-//		
-//		return "/html/cacheeditor";
-//	}
+	@RequestMapping("/addRes")
+	public String addRes(Map <String, Object> map) {
+		
+		return "/html/add_res";
+	}
 	
 	/**重新Pull取文件
 	 * @param map
