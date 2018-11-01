@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" monitorInterval="1800">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d %-5p [%t] %c{4}(%F:%L)  - %m%n"/>
+		</Console>
+		
+        <!-- 
+		<File name="ERROR" fileName="logs/work_error.log">
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d %-5p [%t] (%F:%L) - %m%n"/>
+        </File>
+             <Policies>  
+            <TimeBasedTriggeringPolicy interval="1" modulate="true" />  
+            </Policies> 
+         -->
+		<RollingFile name="File" fileName="logs/ms-configServer_debug.log" 
+                     filePattern="logs/${date:yyyy-MM}/yuce_debug-%d{MM-dd-yyyy}-%i.log.gz">
+            <ThresholdFilter level="debug" onMatch="ACCEPT"/>
+            <PatternLayout pattern="%d %-5p [%t] (%F:%L) - %m%n"/>
+            <SizeBasedTriggeringPolicy size="30MB"/>
+        </RollingFile>
+        <RollingFile name="WARN" fileName="logs/ms-configServer_warn.log" 
+                     filePattern="logs/${date:yyyy-MM}/ms-configServer_warn-%d{MM-dd-yyyy}-%i.log.gz">
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d %-5p [%t] (%F:%L) - %m%n"/>
+            <SizeBasedTriggeringPolicy size="30MB"/>
+        </RollingFile>
+        <RollingFile name="ERROR" fileName="logs/ms-configServer_error.log" 
+                     filePattern="logs/${date:yyyy-MM}/ms-configServer_error-%d{MM-dd-yyyy}-%i.log.gz">
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d %-5p [%t] (%F:%L) - %m%n"/>
+            <SizeBasedTriggeringPolicy size="30MB"/>
+        </RollingFile>
+        <!-- 
+        <MYJPA  name="MYJPA" entityName="LogErrorTable" serviceName="mydbManager">
+        	<ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+        </MYJPA>
+         -->
+        
+        <Async name="Async">
+	      <AppenderRef ref="File"/>
+	      <AppenderRef ref="WARN"/>
+	      <AppenderRef ref="ERROR"/>
+	    </Async>
+	</Appenders>
+	<Loggers>
+        <!-- 
+		
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="DEBUG"/>  
+		<logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="DEBUG"/>  
+		<logger name="org.hibernate.engine.QueryParameters" level="DEBUG"/>  
+		<logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG"/>
+		<logger name="org.hibernate.SQL" level="DEBUG"/>  
+         -->
+		<AsyncLogger name="org.hibernate.sql" level="DEBUG" >
+			<AppenderRef ref="File" />
+        </AsyncLogger>
+        <AsyncLogger name="org.springframework" level="INFO">
+        </AsyncLogger>
+        <AsyncLogger name="com.yuce" level="INFO">
+        </AsyncLogger>
+	    <!-- 
+        <AsyncLogger name="org.hibernate.SQL" level="debug" >
+	      <AppenderRef ref="File"/>
+	    </AsyncLogger>
+		<Root level="DEBUG">
+		</Root>
+	     -->
+		<asyncRoot level="info">
+			<AppenderRef ref="Console"/>
+			<AppenderRef ref="File"/>
+			<AppenderRef ref="WARN"/>
+			<AppenderRef ref="ERROR"/>
+		</asyncRoot>
+	</Loggers>
+</Configuration>

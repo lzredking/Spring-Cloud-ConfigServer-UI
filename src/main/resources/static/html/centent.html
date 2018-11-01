@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Login Spring Cloud ConfigServer UI</title>
+	
+	<link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/icon.css">
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.easyui.min.js"></script>
+    
+    <script th:inline="javascript">
+    var fileName=[[${fileName}]];
+    var url="/load/"+[[${fileName}]];
+    
+    function init() {  
+       
+            var grid = $('#dg');  
+            
+            $.ajax({  
+                type: "POST", 
+                async: false,  
+                url: "/load/"+[[${fileName}]],  
+                success: function (data) {  
+                	
+                   	var json = eval(data);  
+                	if(json.code==200){
+	                    $('#dg').datagrid('loadData', json.obj);  
+                	}else{
+                		$.messager.alert('UI','未查询到相关数据!','error');
+                	}
+                	
+                }  
+            });  
+            return;  
+        }
+    
+
+    $(document).ready(function(){
+    	init();
+    });
+    </script>
+</head>
+<body>
+	<div style="margin:20px 0;"></div>
+	<!-- onClickRow: onClickRow -->
+	<table id="dg" class="easyui-datagrid" title="配置信息" style="width:1005px;height:250px"
+			data-options="
+				iconCls: 'icon-edit',
+				singleSelect: true,
+				toolbar: '#tb',
+				rownumbers: true,
+				
+				onClickCell: onClickCell
+				">
+		<thead>
+			<tr>
+				
+				<th data-options="field:'key',
+					editor:{type:'textbox',
+						options:{required:true}},width:350">Key</th>
+				<th data-options="field:'value',
+					editor:{type:'textbox',
+						options:{required:true}},width:420">Value</th>
+				
+				<th data-options="field:'id',width:200,align:'center',formatter:formatOper"> </th>
+			</tr>
+		</thead>
+	</table>
+	
+	<div id="tb" style="height:auto ;padding-left: 20px;">
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="append()">Append</a>
+		<!-- 
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeit()">Remove</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="accept()">Accept</a>
+		 -->
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-undo',plain:true" onclick="reject()">Reject</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" onclick="getChanges()">GetChanges</a>
+	</div>
+	
+	<script type="text/javascript">
+		/* 列修改 */
+		$.extend($.fn.datagrid.methods, {
+			editCell: function(jq,param){
+				return jq.each(function(){
+					var opts = $(this).datagrid('options');
+					var fields = $(this).datagrid('getColumnFields',true).concat($(this).datagrid('getColumnFields'));
+					for(var i=0; i<fields.length; i++){
+						var col = $(this).datagrid('getColumnOption', fields[i]);
+						col.editor1 = col.editor;
+						if (fields[i] != param.field){
+							col.editor = null;
+						}
+					}
+					$(this).datagrid('beginEdit', param.index);
+					for(var i=0; i<fields.length; i++){
+						var col = $(this).datagrid('getColumnOption', fields[i]);
+						col.editor = col.editor1;
+					}
+				});
+			}
+		});
+		
+		var editIndex = undefined;
+		function endEditing(){
+			if (editIndex == undefined){return true}
+			if ($('#dg').datagrid('validateRow', editIndex)){
+				$('#dg').datagrid('endEdit', editIndex);
+				editIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		function onClickRow(index,row){
+			if (editIndex != index){
+				if (endEditing()){
+					$('#dg').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+					editIndex = index;
+				} else {
+					$('#dg').datagrid('selectRow', editIndex);
+				}
+			}
+		}
+		function onClickCell(index, field){
+			if (endEditing()){
+				$('#dg').datagrid('selectRow', index)
+						.datagrid('editCell', {index:index,field:field});
+				editIndex = index;
+			}
+		}
+		
+		function append(){
+			if (endEditing()){
+				$('#dg').datagrid('appendRow',{id:''});
+				editIndex = $('#dg').datagrid('getRows').length-1;
+				$('#dg').datagrid('selectRow', editIndex)
+						.datagrid('beginEdit', editIndex);
+			}
+		}
+		function removeit(){
+			if (editIndex == undefined){return}
+			//var row = $('#dg').datagrid('getSelected');
+			//if (row){
+			//	$.messager.alert('Info', row.itemid+":"+row.productid+":"+row.attr1);
+			//}
+			$('#dg').datagrid('cancelEdit', editIndex)
+					.datagrid('deleteRow', editIndex);
+			editIndex = undefined;
+		}
+		//保存
+		function accept(){
+			if (endEditing()){
+				$('#dg').datagrid('acceptChanges');
+			}
+		}
+		function reject(){
+			$('#dg').datagrid('rejectChanges');
+			editIndex = undefined;
+		}
+		function getChanges(){
+			var rows = $('#dg').datagrid('getChanges');
+			$.messager.alert('Info',rows.length+' rows are changed!','info');
+		}
+		
+		
+		function formatOper(val,row,index){  
+			editIndex=index;
+			var html='<img src="../js/jquery-easyui-1.6.7/themes/icons/pencil.png" style="cursor: pointer;" title="修改/新增" onclick=edit("'+fileName+'","'+row.id+'","'+row.value+'"); />';
+			html+='<span style="height:auto ;padding-left: 30px;"></span>'
+			html+='<img src="../js/jquery-easyui-1.6.7/themes/icons/cancel.png" style="cursor: pointer;" title="删除" onclick=del("'+fileName+'","'+row.id+'",""); />';  
+		    return html;
+		} 
+		
+		function edit(fileName, id,value){
+			///add/{fileName}/{key}/{value}
+			endEditing();
+			var row = $('#dg').datagrid('getSelected');
+			
+			var url="/add/"+fileName+"/"+row.key+"/"+row.value;
+			
+			$.messager.confirm('提醒', '确认要修改/添加吗?', function(r){
+				if (r){
+					
+					$.ajax({  
+		                type: "POST", 
+		                async: false,  
+		                url: url,  
+		                success: function (data) {  
+		                	
+		                   	var json = eval(data);  
+		                	if(json.code==200){
+		                		$.messager.alert('Info','数据修改成功!','info');
+		                	}else{
+		                		$.messager.alert('error','['+row.key+']-修改失败!','error');
+		                	}
+		                	
+		                }  
+		            });  
+				}
+			});
+		}
+		
+		function del(fileName, id){
+			var url="/remove/"+fileName+"/"+id;
+			$.messager.confirm('提醒', '确认要删除吗?', function(r){
+				if (r){
+					
+					$.ajax({  
+		                type: "POST", 
+		                async: false,  
+		                url: url,  
+		                success: function (data) {  
+		                	
+		                   	var json = eval(data);  
+		                	if(json.code==200){
+		                		$.messager.alert('UI','数据删除成功!','info');
+		                	}else{
+		                		$.messager.alert('UI','['+id+']-删除失败!','error');
+		                	}
+		                	
+		                }  
+		            });  
+				}
+			});
+			removeit();
+			init();
+		}
+	</script>
+</body>
+</html>

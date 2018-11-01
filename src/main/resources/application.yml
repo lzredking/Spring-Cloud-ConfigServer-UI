@@ -1,0 +1,59 @@
+server:  
+  port: 8765
+  tomcat:
+    accesslog:
+      enabled: true
+    
+     
+spring:  
+  cloud:  
+    config:  
+      enabled: true  
+      server:  
+#        svn:  
+#          uri: svn://192.168.25.100/src  
+#          username: kunguo 
+#          password: 123456
+#          searchPaths: test_config
+#          basedir: /temp/config-pro
+        git:  
+          uri: https://github.com/lzredking/config-repo.git
+          username: redkingyang@foxmail.com
+          password: yourgitpassword
+          basedir: /temp/config-repo 
+          search-paths: config-server
+        default-label: master
+        prefix: /config
+#          
+#  profiles:  
+#    active: subversion
+    # local storage,search path ‘src/main/resource’
+  #  active: native
+  application:
+    name: config-server
+#  rabbitmq:
+#    host: 192.168.25.21
+#    port: 5672
+#    username: xmcredit
+#    password: xmcredit
+    
+  thymeleaf:
+    prefix: classpath:/static/  
+    
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+  instance:
+      preferIpAddress: true
+      
+#management:
+#  security:
+#    enabled: false
+    
+logging:  
+  level:  
+    org.springframework.boot.env.PropertySourcesLoader: TRACE  
+    org.springframework.cloud.config.server: DEBUG  
+    
+

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Login Spring Cloud ConfigServer UI</title>
+	<link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.6.7/themes/icon.css">
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-easyui-1.6.7/jquery.easyui.min.js"></script>
+</head>
+<body>
+	<div class="easyui-panel" title="Config Server Console Info" style="width:80%;max-width:900px;padding:30px 60px;" align="left">
+            <div style="margin-bottom:20px">
+               	 发现本地缓存文件与仓库中的配置文件不一致时通过以下操作同步。<BR>
+               	 
+            </div>
+            <div style="margin-bottom:20px">
+               	1. 到服务器上重新Pull取文件
+               	 
+            </div>
+            <div style="margin-bottom:20px">
+               	2. 修改本地的配置信息直接覆盖仓库中的文件。。。提交前先确认配置信息！
+               	 
+            </div>
+            <div style="margin-bottom:20px">
+            	<div style="float: left;padding-right: 5px;">3.</div>
+               	<div style="cursor: pointer;color: red;padding-left: 10px;" onclick="clone();">点击此处--强制更新</div>
+               	<div style="padding-left: 20px;padding-top: 10px;">如果删除失败，请到服务器手动删除缓存文件。</div>
+               	<div style="padding-left: 20px;padding-top: 10px;">如有可能须要停止ConfigServer服务后删除缓存文件。</div>
+            </div>
+    </div>
+    <script>
+        function clone(){
+        	
+			$.messager.confirm('提醒', '确认要删除本节点缓存吗?', function(r){
+				if (r){
+					
+					$.ajax({  
+		                type: "POST", 
+		                async: false,  
+		                url: "/loadResFile",  
+		                success: function (data) {  
+		                	
+		                   	var json = eval(data);  
+		                	if(json.code==200){
+		                		$.messager.alert('UI','数据更新成功，请刷新左边菜单！','info');
+		                	}else{
+		                		$.messager.alert('UI','更新失败!请到服务器手动删除缓存文件,'+json.msg,'error');
+		                	}
+		                	
+		                }  
+		            });  
+				}
+			});
+        	
+        }
+       
+    </script>
+</body>
+</html>

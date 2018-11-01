@@ -1,0 +1,148 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>xm-server</groupId>
+	<artifactId>ms-configserver</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
+  
+    <parent>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-parent</artifactId>
+       <version>2.0.3.RELEASE</version>
+       <relativePath /> <!-- lookup parent from repository -->
+   </parent>
+   <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<start-class>com.ms.configserver.main.ConfigServerApplication</start-class>
+	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+            	<version>Finchley.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- <repositories>
+	    <repository>
+	        <id>spring-milestones</id>
+	        <name>Spring Milestones</name>
+	        <url>https://repo.spring.io/libs-milestone</url>
+	        <snapshots>
+	            <enabled>false</enabled>
+	        </snapshots>
+	    </repository>
+	</repositories> -->
+
+	<dependencies>
+		
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-config-server</artifactId>
+		</dependency>
+		<!-- SVN 配置文件 svnkit 客户端-->
+		<!-- <dependency>  
+	         <groupId>org.tmatesoft.svnkit</groupId>  
+	        <artifactId>svnkit</artifactId>  
+	    </dependency>  -->
+	    <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-actuator</artifactId>
+	    </dependency>
+		<!-- 启用 Spring Cloud Bus -->
+		<!-- <dependency>
+		  <groupId>org.springframework.cloud</groupId>
+		  <artifactId>spring-cloud-config-monitor</artifactId>
+		</dependency> -->
+		<!-- 启用 Spring Cloud Bus后要开启amqp 默认rabbitmq -->
+	    <!-- <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-amqp</artifactId>
+	    </dependency> -->
+	    <!-- <dependency>
+		    <groupId>org.springframework.cloud</groupId>
+		    <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+		</dependency> -->
+	    <dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-logging</artifactId>
+	            <exclusions>
+					<exclusion>
+					<artifactId>logback-classic</artifactId>
+					<groupId>ch.qos.logback</groupId>
+					</exclusion>
+				</exclusions>
+	    </dependency>	
+	    <dependency> 
+	           <groupId>org.springframework.boot</groupId>
+	           <artifactId>spring-boot-starter-log4j2</artifactId>
+	    </dependency> -->
+	    <!-- Java并发框架 
+	    -->
+	   <!--  <dependency>
+		    <groupId>com.lmax</groupId>
+		    <artifactId>disruptor</artifactId>
+		    <version>3.2.0</version>
+		</dependency> -->
+       <!-- eureka服务注册发现 做成配置中心集群-->
+	    <dependency>
+	        <groupId>org.springframework.cloud</groupId>
+	        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+	    </dependency>
+		
+		<!-- html支持 -->
+	    <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+	    </dependency>
+	    <dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-test</artifactId>
+	        <scope>test</scope>
+	    </dependency>
+
+
+		<dependency>
+		 	<groupId>org.springframework.boot</groupId>
+		 	<artifactId>spring-boot-devtools</artifactId>
+		 	<optional>true</optional> <!-- 这个需要为 true 热部署才有效 -->
+		</dependency>
+</dependencies>
+	<build>
+	<plugins>
+           <plugin>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-maven-plugin</artifactId>
+           </plugin>
+           <!-- docker的maven插件，官网：https://github.com/spotify/docker-maven-plugin -->
+            <!-- <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.13</version>
+                <configuration>
+                    <imageName>ms-config-server/testImae</imageName>
+                    <baseImage>java8</baseImage>
+                    <entryPoint>["java", "-jar", "/${project.artifactId.version}.jar"]</entryPoint>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>/target/docker</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin> -->
+	</plugins>
+</build>
+
+</project>
