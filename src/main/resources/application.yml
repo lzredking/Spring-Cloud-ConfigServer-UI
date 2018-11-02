@@ -34,8 +34,8 @@ spring:
 #  rabbitmq:
 #    host: 192.168.25.21
 #    port: 5672
-#    username: xmcredit
-#    password: xmcredit
+#    username: xxxx
+#    password: xxxx
     
   thymeleaf:
     prefix: classpath:/static/  
