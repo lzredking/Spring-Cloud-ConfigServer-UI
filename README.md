@@ -1,14 +1,20 @@
 # Spring cloud ConfigServer UI
 
 版本信息：
+ spring cloud
+ 
 Spring Cloud Finchley.RELEASE
 
 Spring boot 2.0.3.RELEASE
 
+spring-cloud-config 2.0.0.RELEASE
+
+已经包含Srping cloud config组件，可以直接使用
+
 开发目的：
 
-1.
-2.
+1.能直观的管理配置文件
+2.可以在编辑配置文件信息
 
 
 待开发：
