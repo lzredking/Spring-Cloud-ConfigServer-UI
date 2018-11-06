@@ -153,6 +153,34 @@
 		function accept(){
 			if (endEditing()){
 				$('#dg').datagrid('acceptChanges');
+				
+				/* var rows = $('#dg').datagrid('getChanges');
+				if(rows.length==0){
+					$.messager.alert('Info','检测到'+rows.length+'行发生变化!','info');
+					return;
+				} */
+				var url="/pushFile/"+fileName;
+				
+				$.messager.confirm('提醒', '确认要保存修改/添加吗?（不包括删除）', function(r){
+					if (r){
+						
+						$.ajax({  
+			                type: "POST", 
+			                async: false,  
+			                url: url,  
+			                success: function (data) {  
+			                	
+			                   	var json = eval(data);  
+			                	if(json.code==200){
+			                		$.messager.alert('Info','数据修改成功!','info');
+			                	}else{
+			                		$.messager.alert('error','数据修改失败!','error');
+			                	}
+			                	
+			                }  
+			            });  
+					}
+				});
 			}
 		}
 		function reject(){
@@ -160,6 +188,7 @@
 			editIndex = undefined;
 		}
 		function getChanges(){
+			
 			var rows = $('#dg').datagrid('getChanges');
 			$.messager.alert('Info',rows.length+' rows are changed!','info');
 		}
@@ -167,7 +196,7 @@
 		
 		function formatOper(val,row,index){  
 			editIndex=index;
-			var html='<img src="../js/jquery-easyui-1.6.7/themes/icons/pencil.png" style="cursor: pointer;" title="修改/新增" onclick=edit("'+fileName+'","'+row.id+'","'+row.value+'"); />';
+			var html='<img src="../js/jquery-easyui-1.6.7/themes/icons/filesave.png" style="cursor: pointer;" title="修改/新增" onclick=edit("'+fileName+'","'+row.id+'","'+row.value+'"); />';
 			html+='<span style="height:auto ;padding-left: 30px;"></span>'
 			html+='<img src="../js/jquery-easyui-1.6.7/themes/icons/cancel.png" style="cursor: pointer;" title="删除" onclick=del("'+fileName+'","'+row.id+'",""); />';  
 		    return html;
@@ -177,7 +206,9 @@
 			///add/{fileName}/{key}/{value}
 			endEditing();
 			var row = $('#dg').datagrid('getSelected');
-			
+			if(!row){
+				$.messager.alert('error','没读取到表格行信息!','error');
+			}
 			var url="/add/"+fileName+"/"+row.key+"/"+row.value;
 			
 			$.messager.confirm('提醒', '确认要修改/添加吗?', function(r){
@@ -215,7 +246,9 @@
 		                	
 		                   	var json = eval(data);  
 		                	if(json.code==200){
+		                		removeit();
 		                		$.messager.alert('UI','数据删除成功!','info');
+		                		init();
 		                	}else{
 		                		$.messager.alert('UI','['+id+']-删除失败!','error');
 		                	}
@@ -224,7 +257,6 @@
 		            });  
 				}
 			});
-			removeit();
 			init();
 		}
 	</script>

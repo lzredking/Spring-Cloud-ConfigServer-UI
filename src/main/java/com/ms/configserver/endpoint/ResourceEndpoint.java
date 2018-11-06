@@ -19,12 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.yaml.snakeyaml.Yaml;
 
 import com.ms.configserver.bean.ResVO;
 import com.ms.configserver.common.BaseUtile;
 import com.ms.configserver.common.ConfigInfoBean;
 import com.ms.configserver.compoment.LocalResources;
 import com.ms.configserver.compoment.LockCache;
+import com.ms.configserver.compoment.ResFileUtil;
 import com.ms.configserver.compoment.ResourceCache;
 import com.ms.configserver.jgit.JGitUtil;
 
@@ -61,18 +63,11 @@ public class ResourceEndpoint {
 		String exception=null;
 		try {
 			String dir=baseUtile.validate();
-			Properties pro=new Properties();
-			File file=new File(dir+"/"+fileName);
-			InputStream in =new FileInputStream(file);
-			pro.load(in);
-			in.close();
-			//
-			FileOutputStream out = new FileOutputStream(file,false);//true表示追加打开
-			pro.put(key, value);
-			pro.store(out, "add key ： "+key);
-			out.close();
+			Map<String,String> cache=new HashMap<String,String>();
+			
+//			cache=ResFileUtil.loadFiel(dir+"/"+fileName);
+			cache=ResFileUtil.writerFiel(dir+"/"+fileName, key, value);
 
-			Map<String,String> cache=new HashMap<String,String>((Map)pro);
 			ResourceCache.updateResource(dir+"/"+fileName, cache);
 			
 			
@@ -94,8 +89,8 @@ public class ResourceEndpoint {
 	 * @param value
 	 * @return
 	 */
-	@RequestMapping(method ={RequestMethod.POST},value = "/pashFile/{fileName}/")
-	public ResBean pashFile(@PathVariable String fileName) {
+	@RequestMapping(method ={RequestMethod.POST},value = "/pushFile/{fileName}")
+	public ResBean pushFile(@PathVariable String fileName) {
 		
 		if(StringUtils.isBlank(fileName)) {
 			return new ResBean(400,"文件名不能为空");
@@ -105,6 +100,7 @@ public class ResourceEndpoint {
 //			return new ResBean(401, "此文件资源已经占用，请稍候再试！");
 //		}
 //		LockCache.lock(fileName,"");
+		
 		String exception=null;
 		try {
 			
@@ -144,18 +140,10 @@ public class ResourceEndpoint {
 		String exception=null;
 		try {
 			String dir=baseUtile.validate();
-			Properties pro=new Properties();
-			File file=new File(dir+"/"+fileName);
-			InputStream in =new FileInputStream(file);
-			pro.load(in);
-			in.close();
-			//
-			FileOutputStream out = new FileOutputStream(file,false);//true表示追加打开
-			pro.put(key, value);
-			pro.store(out, "add key ： "+key);
-			out.close();
+			
 
-			Map<String,String> cache=new HashMap<String,String>((Map)pro);
+			Map<String,String> cache=ResFileUtil.writerFiel(dir+"/"+fileName, key, value);
+			
 			ResourceCache.updateResource(dir+"/"+fileName, cache);
 			
 			String res=JGitUtil.gitCommitAndPush(new File(baseUtile.getBaseDir()),configInfo.getGitUser(),configInfo.getGitPwd());
@@ -194,16 +182,19 @@ public class ResourceEndpoint {
 		String exception=null;
 		try {
 			String dir=baseUtile.validate();
-			Properties pro=new Properties();
-			File file=new File(dir+"/"+fileName);
-			InputStream in =new FileInputStream(file);
-			pro.load(in);
-			in.close();
-			//删除Key
-			FileOutputStream out = new FileOutputStream(file,false);//true表示追加打开
-			pro.remove(key);
-			pro.store(out, "del key : "+key+" = "+ResourceCache.getPro(dir+"/"+fileName).get(key));
-			out.close();
+			
+			Map<String,String> cache=ResFileUtil.removeKey(dir+"/"+fileName, key);
+			
+//			Properties pro=new Properties();
+//			File file=new File(dir+"/"+fileName);
+//			InputStream in =new FileInputStream(file);
+//			pro.load(in);
+//			in.close();
+//			//删除Key
+//			FileOutputStream out = new FileOutputStream(file,false);//true表示追加打开
+//			pro.remove(key);
+//			pro.store(out, "del key : "+key+" = "+ResourceCache.getPro(dir+"/"+fileName).get(key));
+//			out.close();
 
 			//删除Cache
 			ResourceCache.delResKey(dir+"/"+fileName, key);
@@ -246,14 +237,8 @@ public class ResourceEndpoint {
 				cache= ResourceCache.getResource(fileName);
 			}else {
 				
-				Properties pro=new Properties();
-				File file=new File(dir+"/"+fileName);
-				InputStream in =new FileInputStream(file);
-				pro.load(in);
-				in.close();
-				
 				//
-				cache=new HashMap<String,String>((Map)pro);
+				cache=ResFileUtil.loadFiel(dir+"/"+fileName);
 				ResourceCache.updateResource(dir+"/"+fileName, cache);
 			}
 			ResVO vo=null;
@@ -305,7 +290,7 @@ public class ResourceEndpoint {
 		return new ResBean();
 	}
 	
-	/**
+	/**Clone文件
 	 * @return
 	 */
 	@RequestMapping(method ={RequestMethod.POST,RequestMethod.GET},value = "/loadResFile")
@@ -317,7 +302,7 @@ public class ResourceEndpoint {
 			
 			File file=new File(dir);
 			System.out.println(file.getParentFile().getPath());
-			delFile(file.getParentFile());
+			ResFileUtil.delFile(file.getParentFile());
 			
 			//Git
 			String msg=JGitUtil.gitClone(configInfo.getGitPath(), new File(baseUtile.getBaseDir()));
@@ -373,23 +358,5 @@ public class ResourceEndpoint {
 		return new ResBean();
 	}
 	
-	private void delFile(File file) {
-		 
-		if(file.isDirectory()){
-			File files[]=file.listFiles();
-			if(files==null || files.length==0) {
-				System.out.println("del file "+file.getPath()+" "+file.delete());
-			}else {
-				
-				for(File f:files) {
-					if(f.isDirectory()) {
-						delFile(f);
-					}else {
-						System.out.println("del file "+f.getPath()+" "+f.delete());
-					}
-				}
-			}
-		}
-		System.out.println("del file "+file.getPath()+" "+file.delete());
-	}
+	
 }

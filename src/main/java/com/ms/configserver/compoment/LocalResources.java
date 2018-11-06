@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.ms.configserver.endpoint.ResBean;
@@ -20,6 +19,10 @@ import com.ms.configserver.endpoint.ResBean;
 public class LocalResources {
 
 	
+	/**返回所有文件和文件里的信息
+	 * @param dir
+	 * @return
+	 */
 	public Map<String, Map<String,String>> loadResources(String dir) {
 
 		//cache有直接返回
